@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CGMagic · kompresi gambar ajaib</title>
+  <!-- Font & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- JSZip for download all -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0c10;
+      color: #eef2f5;
+      font-family: 'Inter', sans-serif;
+      line-height: 1.5;
+      scroll-behavior: smooth;
+    }
+
+    /* neon glow & gradien futuristik */
+    .glass-card {
+      background: rgba(18, 22, 28, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 255, 255, 0.15);
+      border-radius: 2rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 255, 200, 0.1) inset;
+    }
+
+    .neon-text {
+      background: linear-gradient(135deg, #a5f0ff, #7c3aed, #c084fc);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 700;
+    }
+
+    .neon-border {
+      border: 1px solid transparent;
+      border-image: linear-gradient(45deg, #0ff, #f0f) 1;
+      border-radius: 2rem;
+    }
+
+    button, .btn-glow {
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 3rem;
+      color: white;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      box-shadow: 0 10px 25px -8px #00ffff80, 0 0 0 1px #00ffff33 inset;
+      transition: 0.25s ease;
+      cursor: pointer;
+    }
+    button:hover {
+      box-shadow: 0 15px 30px -5px #7c3aedcc, 0 0 0 2px #c084fc inset;
+      transform: scale(1.02);
+    }
+
+    /* layout */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* navbar simple */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 0;
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(145deg, #0ff, #b300ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    /* hero */
+    .hero {
+      text-align: center;
+      padding: 3rem 1rem 4rem;
+    }
+    .hero h1 {
+      font-size: 3.2rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .hero .subhead {
+      font-size: 1.2rem;
+      color: #a0b3d9;
+      max-width: 700px;
+      margin: 1.5rem auto;
+    }
+
+    /* feature grid */
+    .features-grid, .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin: 4rem 0;
+    }
+    .feat-card {
+      background: rgba(20, 30, 40, 0.5);
+      backdrop-filter: blur(8px);
+      padding: 2rem 1.5rem;
+      border-radius: 2rem;
+      border: 1px solid #2affb033;
+      transition: 0.2s;
+    }
+    .feat-card i {
+      font-size: 2.2rem;
+      background: linear-gradient(45deg, #0ff, #a46eff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 1rem;
+    }
+
+    /* kompresor utama */
+    .compressor-panel {
+      margin: 5rem 0;
+      padding: 2.5rem 2rem;
+      border-radius: 3rem;
+    }
+
+    .dropzone {
+      border: 2px dashed #00ffff80;
+      border-radius: 2.5rem;
+      padding: 3rem 2rem;
+      text-align: center;
+      background: #0b0f16;
+      transition: 0.15s;
+      cursor: pointer;
+    }
+    .dropzone:hover {
+      border-color: #c084fc;
+      background: #10161f;
+    }
+    .dropzone i {
+      font-size: 3rem;
+      color: #0ff;
+      margin-bottom: 1rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin: 2rem 0 1rem;
+      gap: 1.5rem;
+    }
+    .compression-level {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .level-badge {
+      background: #1f2a3c;
+      padding: 0.45rem 1.4rem;
+      border-radius: 3rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      transition: 0.15s;
+      cursor: pointer;
+    }
+    .level-badge.active {
+      border-color: #0ff;
+      background: #0ff1a;
+      box-shadow: 0 0 12px cyan;
+    }
+    .custom-slider {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    input[type=range] {
+      width: 160px;
+      height: 6px;
+      background: linear-gradient(90deg, #0ff, #b266ff);
+      border-radius: 10px;
+      -webkit-appearance: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 0 12px cyan;
+    }
+
+    /* gallery preview */
+    .gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      margin-top: 2.5rem;
+      justify-content: center;
+    }
+    .image-card {
+      width: 280px;
+      background: #141c26;
+      border-radius: 1.8rem;
+      padding: 1.5rem 1.2rem;
+      border: 1px solid #2affb040;
+      position: relative;
+    }
+    .preview-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1/1;
+      border-radius: 1.2rem;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      background: #0a0f16;
+    }
+    .preview-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .compare-slider {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      z-index: 5;
+    }
+    .before-after {
+      position: relative;
+      width: 50%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .before-after img {
+      width: 200%;
+      max-width: 200%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+    }
+    .before-img-clip {
+      object-position: left;
+    }
+    .after-img-clip {
+      left: -100%;
+      object-position: right;
+    }
+    .slider-handle {
+      position: absolute;
+      width: 4px;
+      height: 100%;
+      background: #0ff;
+      left: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 0 20px cyan;
+      z-index: 10;
+      cursor: ew-resize;
+    }
+    .file-info {
+      font-size: 0.9rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      justify-content: space-between;
+      margin: 0.5rem 0;
+    }
+    .savings-badge {
+      background: #00b38833;
+      border-radius: 2rem;
+      padding: 0.2rem 0.8rem;
+      font-weight: 600;
+      color: #4affb5;
+    }
+    .card-actions {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 1rem;
+    }
+    .btn-download {
+      flex: 1;
+      background: #253141;
+      border: 1px solid cyan;
+      border-radius: 2rem;
+      padding: 0.5rem;
+      font-size: 0.9rem;
+      color: white;
+    }
+    .btn-download:disabled {
+      opacity: 0.4;
+      border-color: gray;
+    }
+
+    /* loading shimmer */
+    .loading-pulse {
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #1f2a36 25%, #2e3c4c 50%, #1f2a36 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* FAQ */
+    .faq-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    .faq-item {
+      background: #131b26;
+      padding: 1.5rem;
+      border-radius: 1.5rem;
+    }
+
+    /* mobile */
+    @media (max-width: 700px) {
+      .hero h1 { font-size: 2.4rem; }
+      .controls { flex-direction: column; align-items: stretch; }
+      .faq-grid { grid-template-columns: 1fr; }
+    }
+
+    /* download all button */
+    .download-all-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: #1d2837;
+      padding: 0.8rem 2rem;
+      border-radius: 3rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- navbar -->
+    <nav class="navbar">
+      <span class="logo"><i class="fas fa-magic"></i> CGMagic</span>
+      <div>
+        <a href="#compressor" style="color:#b0d0ff; margin-right: 2rem;">Tool</a>
+        <a href="#faq" style="color:#b0d0ff;">FAQ</a>
+      </div>
+    </nav>
+
+    <!-- hero -->
+    <section class="hero">
+      <h1>Kompres gambar <span class="neon-text">seperti sulap</span></h1>
+      <div class="subhead">Ukuran file turun drastis, kualitas tetap tajam. Magic level: profesional.</div>
+      <button onclick="document.getElementById('fileInput').click()" style="font-size: 1.2rem; padding: 1rem 3rem;"><i class="fa-solid fa-cloud-arrow-up"></i> Coba gratis</button>
+    </section>
+
+    <!-- fitur unggulan -->
+    <section>
+      <h2 class="neon-text" style="font-size: 2rem; margin-bottom: 2rem;">✨ fitur ajaib</h2>
+      <div class="features-grid">
+        <div class="feat-card"><i class="fas fa-compress-alt"></i><h3>Turun 80%+</h3><p>Rasio kompresi ekstrem, tetap tajam.</p></div>
+        <div class="feat-card"><i class="fas fa-images"></i><h3>Multi batch</h3><p>Upload banyak, kompres simultan.</p></div>
+        <div class="feat-card"><i class="fas fa-eye"></i><h3>Slider before/after</h3><p>Geser untuk melihat keajaiban.</p></div>
+        <div class="feat-card"><i class="fas fa-download"></i><h3>Download all zip</h3><p>Satu klik, semua hasil.</p></div>
+      </div>
+    </section>
+
+    <!-- cara kerja 3 langkah -->
+    <section style="margin: 4rem 0;">
+      <h2 class="neon-text" style="font-size: 2rem;">⚡ cara kerja</h2>
+      <div class="steps-grid">
+        <div class="feat-card"><span style="font-size: 2rem;">1️⃣</span><h3>Upload gambar</h3><p>Drag & drop atau pilih file</p></div>
+        <div class="feat-card"><span style="font-size: 2rem;">2️⃣</span><h3>Pilih level kompresi</h3><p>Low, Medium, High, atau custom</p></div>
+        <div class="feat-card"><span style="font-size: 2rem;">3️⃣</span><h3>Download</h3><p>Simpan satu-satu atau dalam zip</p></div>
+      </div>
+    </section>
+
+    <!-- COMPRESSOR CORE -->
+    <section id="compressor" class="compressor-panel glass-card">
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+        <i class="fas fa-cloud-upload-alt fa-3x"></i>
+        <h3>Drag & drop gambar atau klik di sini</h3>
+        <p style="color: #8fa3c0;">(JPG, PNG, WEBP — maks 20MB per file)</p>
+        <input type="file" id="fileInput" multiple accept="image/png,image/jpeg,image/webp" style="display: none;">
+      </div>
+
+      <!-- kontrol kompresi -->
+      <div class="controls">
+        <div class="compression-level">
+          <span class="level-badge active" data-level="low">Low</span>
+          <span class="level-badge" data-level="medium">Medium</span>
+          <span class="level-badge" data-level="high">High</span>
+          <div class="custom-slider">
+            <span>Custom</span>
+            <input type="range" id="qualitySlider" min="0" max="100" value="75" disabled>
+            <span id="qualityValue">75%</span>
+          </div>
+        </div>
+        <button id="compressAllBtn" class="btn-glow"><i class="fas fa-wand-magic"></i> Kompres semua</button>
+        <button id="downloadAllZipBtn" class="download-all-btn" disabled><i class="fas fa-file-archive"></i> Download all (.zip)</button>
+      </div>
+
+      <!-- gallery preview -->
+      <div class="gallery" id="gallery"></div>
+      <div id="loadingIndicator" style="text-align:center; padding:2rem; display:none;"><div class="loading-pulse" style="width:100%; height:60px; border-radius:2rem;"></div><p style="margin-top:1rem;">sedang memampatkan pixel ...</p></div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" style="margin: 5rem 0;">
+      <h2 class="neon-text" style="font-size: 2rem;">❓ FAQ</h2>
+      <div class="faq-grid">
+        <div class="faq-item"><b>✨ Apakah benar-benar gratis?</b><br>100%, semua di browser, tanpa backend.</div>
+        <div class="faq-item"><b>📸 Format apa yang didukung?</b><br>JPG, PNG, WEBP. Output akan sesuai format asli.</div>
+        <div class="faq-item"><b>⚡ Kok bisa cepat?</b><br>Menggunakan canvas dan kompresi client-side modern.</div>
+        <div class="faq-item"><b>📦 Batasan ukuran?</b><br>Browser, disarankan tiap file < 20MB.</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function() {
+      // state
+      let imageFiles = [];            // original files
+      let compressedBlobs = [];        // blob setelah kompres (index sesuai)
+      let compressionInProgress = false;
+      let currentLevel = 'low';         // low, medium, high, custom
+      let customQuality = 75;
+      
+      const fileInput = document.getElementById('fileInput');
+      const dropzone = document.getElementById('dropzone');
+      const gallery = document.getElementById('gallery');
+      const loadingIndicator = document.getElementById('loadingIndicator');
+      const compressAllBtn = document.getElementById('compressAllBtn');
+      const downloadAllZipBtn = document.getElementById('downloadAllZipBtn');
+      const qualitySlider = document.getElementById('qualitySlider');
+      const qualitySpan = document.getElementById('qualityValue');
+      const levelBadges = document.querySelectorAll('.level-badge');
+
+      // helper format bytes
+      function formatBytes(bytes, decimals = 2) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+      }
+
+      // event listeners level
+      levelBadges.forEach(b => {
+        b.addEventListener('click', (e) => {
+          levelBadges.forEach(bad => bad.classList.remove('active'));
+          b.classList.add('active');
+          currentLevel = b.dataset.level;
+          if (currentLevel !== 'custom') {
+            qualitySlider.disabled = true;
+          } else {
+            qualitySlider.disabled = false;
+          }
+        });
+      });
+      qualitySlider.addEventListener('input', (e) => {
+        customQuality = parseInt(e.target.value);
+        qualitySpan.innerText = customQuality + '%';
+      });
+
+      // drag & drop
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, preventDefaults, false);
+      });
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      dropzone.addEventListener('drop', handleDrop, false);
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+      }
+      fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+      function handleFiles(files) {
+        const valid = [];
+        for (let f of files) {
+          if (f.type.match(/image\/(jpeg|png|webp)/)) valid.push(f);
+        }
+        if (valid.length === 0) return;
+        // reset state
+        imageFiles = valid;
+        compressedBlobs = new Array(imageFiles.length).fill(null);
+        renderGallery();
+        downloadAllZipBtn.disabled = true;
+      }
+
+      // render gallery awal (before only)
+      function renderGallery() {
+        if (!imageFiles.length) { gallery.innerHTML = ''; return; }
+        let html = '';
+        imageFiles.forEach((file, idx) => {
+          const url = URL.createObjectURL(file);
+          html += `
+            <div class="image-card" data-index="${idx}">
+              <div class="preview-container" id="preview-${idx}">
+                <img class="preview-img" src="${url}" alt="before" style="opacity:1;">
+                <div class="compare-slider" style="display: none;" id="slider-${idx}">
+                  <div class="before-after"><img class="before-img-clip" src="${url}" alt="before"></div>
+                  <div class="before-after"><img class="after-img-clip" src="" alt="after" id="after-img-${idx}"></div>
+                  <div class="slider-handle" id="handle-${idx}"></div>
+                </div>
+              </div>
+              <div class="file-info">
+                <span>📁 ${file.name.substring(0,12)}${file.name.length>12?'…':''}</span>
+                <span>${formatBytes(file.size)}</span>
+              </div>
+              <div class="file-info" id="info-${idx}">
+                <span id="after-size-${idx}">—</span>
+                <span class="savings-badge" id="savings-${idx}"></span>
+              </div>
+              <div class="card-actions">
+                <button class="btn-download" id="download-single-${idx}" disabled data-idx="${idx}"><i class="fas fa-download"></i> hasil</button>
+              </div>
+            </div>
+          `;
+        });
+        gallery.innerHTML = html;
+
+        // attach download single events
+        imageFiles.forEach((_, idx) => {
+          document.getElementById(`download-single-${idx}`)?.addEventListener('click', (e) => {
+            const i = e.currentTarget.dataset.idx;
+            if (compressedBlobs[i]) {
+              const a = document.createElement('a');
+              a.href = URL.createObjectURL(compressedBlobs[i]);
+              a.download = 'compressed_' + imageFiles[i].name;
+              a.click();
+            }
+          });
+        });
+      }
+
+      // kompres semua
+      compressAllBtn.addEventListener('click', async () => {
+        if (!imageFiles.length) return;
+        compressionInProgress = true;
+        loadingIndicator.style.display = 'block';
+        downloadAllZipBtn.disabled = true;
+        // reset blob
+        compressedBlobs.fill(null);
+        // disable download buttons
+        document.querySelectorAll('.btn-download').forEach(btn => btn.disabled = true);
+
+        for (let i = 0; i < imageFiles.length; i++) {
+          const file = imageFiles[i];
+          let quality = 0.8;
+          if (currentLevel === 'low') quality = 0.9;
+          else if (currentLevel === 'medium') quality = 0.7;
+          else if (currentLevel === 'high') quality = 0.4;
+          else if (currentLevel === 'custom') quality = customQuality / 100;
+
+          try {
+            const compressedBlob = await compressImage(file, quality);
+            compressedBlobs[i] = compressedBlob;
+            updateCardAfterCompression(i, file, compressedBlob);
+          } catch (e) {
+            console.warn('fail compres', i);
+          }
+        }
+
+        loadingIndicator.style.display = 'none';
+        compressionInProgress = false;
+        downloadAllZipBtn.disabled = compressedBlobs.every(b => b === null);
+      });
+
+      // fungsi kompres dengan canvas
+      function compressImage(file, quality) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = (e) => {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              canvas.width = img.width;
+              canvas.height = img.height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0);
+              canvas.toBlob((blob) => {
+                if (blob) resolve(blob);
+                else reject('blob error');
+              }, file.type, quality);
+            };
+          };
+        });
+      }
+
+      // setelah kompres, update card + aktifkan slider
+      function updateCardAfterCompression(idx, originalFile, compressedBlob) {
+        const afterUrl = URL.createObjectURL(compressedBlob);
+        // set after image
+        const afterImg = document.getElementById(`after-img-${idx}`);
+        if (afterImg) afterImg.src = afterUrl;
+
+        // show slider, hide original preview
+        const previewDiv = document.getElementById(`preview-${idx}`);
+        const simpleImg = previewDiv?.querySelector('.preview-img');
+        const sliderDiv = document.getElementById(`slider-${idx}`);
+        if (simpleImg) simpleImg.style.display = 'none';
+        if (sliderDiv) sliderDiv.style.display = 'flex';
+
+        // aktifkan handle geser (minimal)
+        const handle = document.getElementById(`handle-${idx}`);
+        if (handle) {
+          let dragging = false;
+          handle.addEventListener('mousedown', (e) => {
+            dragging = true;
+            const container = previewDiv;
+            const onMouseMove = (me) => {
+              if (!dragging) return;
+              const rect = container.getBoundingClientRect();
+              let x = me.clientX - rect.left;
+              x = Math.max(20, Math.min(rect.width - 20, x));
+              const percent = (x / rect.width) * 100;
+              const beforeDiv = sliderDiv.querySelector('.before-after:first-child');
+              const afterDiv = sliderDiv.querySelector('.before-after:last-child');
+              if (beforeDiv) beforeDiv.style.width = percent + '%';
+              if (afterDiv) afterDiv.style.width = (100 - percent) + '%';
+              handle.style.left = percent + '%';
+            };
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', () => { dragging = false; }, { once: true });
+          });
+        }
+
+        // update info ukuran
+        const afterSizeSpan = document.getElementById(`after-size-${idx}`);
+        const savingSpan = document.getElementById(`savings-${idx}`);
+        const origSize = originalFile.size;
+        const newSize = compressedBlob.size;
+        const savingPercent = ((origSize - newSize) / origSize * 100).toFixed(1);
+        afterSizeSpan.innerText = formatBytes(newSize);
+        savingSpan.innerText = `⬇️ ${savingPercent}%`;
+
+        // aktifkan tombol download
+        const btn = document.getElementById(`download-single-${idx}`);
+        if (btn) btn.disabled = false;
+      }
+
+      // download all zip
+      downloadAllZipBtn.addEventListener('click', async () => {
+        if (compressedBlobs.every(b => !b)) return;
+        const zip = new JSZip();
+        compressedBlobs.forEach((blob, idx) => {
+          if (blob) {
+            zip.file(`compressed_${imageFiles[idx].name}`, blob);
+          }
+        });
+        const content = await zip.generateAsync({ type: 'blob' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(content);
+        a.download = 'pixelmagic_results.zip';
+        a.click();
+      });
+
+      // inisialisasi slider small (optional)
+      window.addEventListener('load', ()=>{});
+    })();
+  </script>
+  <!-- footer kecil -->
+  <footer style="text-align:center; padding:2rem; border-top:1px solid #2affb033; color:#8eaecc;">© CGMagic — by CaggyID</footer>
+</body>
+</html>
