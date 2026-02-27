@@ -4,7 +4,7 @@
 
 > 🚀 **Kompres gambar seperti sulap!** Ukuran file turun drastis, kualitas visual tetap tajam. 100% bekerja di browser, tanpa backend.
 
-[![Live Demo](https://img.shields.io/badge/demo-live-00ffff?style=for-the-badge&logo=netlify)](https://cgmagic.vercel.app)
+[![Live Demo](https://img.shields.io/badge/demo-live-00ffff?style=for-the-badge&logo=netlify)](https://caggyid.github.io/CGMagic/)
 [![GitHub license](https://img.shields.io/github/license/caggyid/CGMagic?style=for-the-badge&color=7c3aed)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge&color=c084fc)](http://makeapullrequest.com)
 
@@ -30,7 +30,7 @@
 
 ## 🚀 Demo Online
 
-🔗 **Live Demo:** [https://cgmagic.vercel.app](https://cgmagic.vercel.app)
+🔗 **Live Demo:** [https://caggyid.github.io/CGMagic](https://caggyid.github.io/CGMagic/)
 
 ## 📦 Instalasi & Penggunaan
 
